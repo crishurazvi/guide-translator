@@ -1,35 +1,30 @@
 import streamlit as st
 import re
 
-# Setare pagina pentru a fi wide (mai mult spatiu)
+# Setare pagina wide
 st.set_page_config(layout="wide", page_title="Medical Text Splitter for OneNote")
 
 def pre_process_figures(text):
     """
-    Cauta mentiuni despre Figuri/Tabele si adauga un marker vizual
-    pentru a sti unde sa lasi spatiu in OneNote.
+    Cauta mentiuni despre Figuri/Tabele si adauga un marker vizual.
     """
-    # Regex pentru a gasi "Fig 1", "Figure 2.1", "Table 3", etc.
-    # Pattern-ul cauta cuvinte cheie urmate de numere/litere
     pattern = r"((?:Fig\.|Figure|Fig|Table|Tabelul|Schema)\s*\d+(\.\d+)?)"
-    
-    # Inlocuim gasirea cu textul original + markerul vizual
-    # Markerul este facut sa fie evident pentru ChatGPT sa il pastreze
-    replacement = r"\1 \n\n🔴🔴🔴 [LIPESTE IMAGINEA/SCHEMA AICI: \1] 🔴🔴🔴\n\n"
+    # Marker vizual puternic
+    replacement = r"\1 \n\n🔴 [LASĂ LOC PENTRU: \1] \n\n"
     
     processed_text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return processed_text
 
-def split_text_smartly(text, chunk_size=3000):
+def split_text_smartly(text, chunk_size):
     """
-    Imparte textul in bucati, incercand sa nu taie frazele la jumatate.
-    Se opreste la paragrafe (\n).
+    Imparte textul in bucati mari fara a taia in mijlocul paragrafului.
     """
     paragraphs = text.split('\n')
     chunks = []
     current_chunk = ""
 
     for para in paragraphs:
+        # Verificam daca adaugand paragraful depasim limita
         if len(current_chunk) + len(para) < chunk_size:
             current_chunk += para + "\n"
         else:
@@ -42,62 +37,70 @@ def split_text_smartly(text, chunk_size=3000):
     return chunks
 
 def main():
-    st.title("🧬 Medical Guidelines to OneNote - AI Prepper")
-    st.markdown("""
-    **Instrucțiuni:**
-    1. Lipește textul din guideline/articol medical în cutia de mai jos.
-    2. Aplicația va detecta automat unde sunt figuri ("Figure X", "Table Y") și va marca locul.
-    3. Copiază pe rând bucățile generate ("PROMPTS") și dă-le la ChatGPT.
-    4. ChatGPT va traduce și formata totul gata de Copy-Paste în OneNote.
-    """)
+    st.title("🧬 Medical Guidelines to OneNote")
 
-    # Sidebar pentru setari
+    # 1. SETARI (Sidebar)
     with st.sidebar:
         st.header("⚙️ Setări")
-        chunk_size = st.slider("Mărime bucată text (caractere)", 1000, 8000, 3000, help="3000 este optim pentru GPT-4")
-        target_lang = st.selectbox("Limba Traducerii", ["Română", "Engleză (Summarized)", "Franceză"])
         
-    # Zona de input
-    raw_text = st.text_area("Lipește textul medical aici:", height=300)
+        # Slider actualizat: default 15000, max 30000
+        chunk_size = st.slider(
+            "Mărime bucată text (caractere)", 
+            min_value=1000, 
+            max_value=30000, 
+            value=15000, 
+            step=1000,
+            help="15.000 caractere = aprox 2000-3000 cuvinte per prompt."
+        )
+        
+        target_lang = st.selectbox("Limba Traducerii", ["Română", "Engleză", "Franceză"])
+        st.info("După ce lipești textul, apasă butonul 'Start Procesare' de sub casetă.")
 
-    if raw_text:
-        # Pasul 1: Identificam figuri si adaugam markers
+    # 2. INPUT
+    raw_text = st.text_area("Lipește textul medical (articol/guideline) aici:", height=300)
+
+    # 3. BUTON DE ACTIUNE (Submit)
+    # Folosim butonul ca trigger, altfel streamlit face rerun la fiecare caracter/blur
+    process_btn = st.button("Start Procesare", type="primary")
+
+    # 4. PROCESARE
+    if process_btn and raw_text:
+        # A. Identificare Figuri
         text_with_figures = pre_process_figures(raw_text)
         
-        # Pasul 2: Impartim textul in bucati logice
+        # B. Splituire
         chunks = split_text_smartly(text_with_figures, chunk_size=chunk_size)
 
         st.divider()
-        st.subheader(f"✅ Rezultat: {len(chunks)} părți de copiat")
+        st.subheader(f"✅ Rezultat: Text împărțit în {len(chunks)} părți")
 
         # Iteram prin chunks
         for i, chunk in enumerate(chunks):
-            # Construim prompt-ul pentru ChatGPT
-            
-            base_prompt = f"""Te rog să acționezi ca un expert medical și traducător.
-Sarcina ta este:
-1. Să traduci textul de mai jos în {target_lang} (păstrează terminologia medicală în engleză în paranteze unde este relevant).
-2. Să formatezi ieșirea special pentru a fi dată Copy-Paste în **Microsoft OneNote**. Asta înseamnă:
-   - Folosește titluri clare (Bold și font mai mare dacă poți).
-   - Folosește liste cu puncte (Bullet points) ierarhice pentru a structura informația.
-   - Folosește **Bold** pentru concepte cheie.
-3. Foarte IMPORTANT: Dacă în text vezi markerul "🔴🔴🔴 [LIPESTE IMAGINEA...]", te rog să pui o linie orizontală și să scrii textul respectiv bolduit și cu o culoare roșie sau galbenă, ca să știu să las spațiu liber pentru screenshot.
+            # Prompt MODIFICAT: Fara bullets fortate, accent pe formatare OneNote clean
+            prompt_text = f"""Te rog să acționezi ca un expert medical și traducător.
 
-Textul de tradus:
+SARCINA:
+1. Traduce textul de mai jos în {target_lang}.
+2. Păstrează terminologia medicală specifică în paranteză (în engleză/limba originală) acolo unde este crucial pentru precizie.
+3. FORMAT PENTRU ONENOTE:
+   - Folosește Titluri (Headings) și subtitluri clare.
+   - Folosește **Bold** pentru a evidenția ideile principale.
+   - Păstrează structura originală a paragrafelor (nu le transforma forțat în liste dacă nu sunt liste).
+4. FIGURI ȘI TABELE:
+   - Dacă întâlnești markerul "🔴 [LASĂ LOC PENTRU...]", te rog să pui o linie orizontală și să scrii textul bolduit și cu roșu (sau o notă clară), ca să știu să las spațiu liber pentru a insera manual imaginea.
+
+TEXT DE TRADUS:
 -----------------------
 {chunk}
 -----------------------
 """
             
-            with st.expander(f"Partea {i+1} / {len(chunks)} (Apasă pentru detalii)", expanded=True):
-                st.info("Copiază textul de mai jos (blocul gri) și dă-i Paste în ChatGPT.")
-                
-                # Afisam direct intr-un code block care are buton de Copy integrat in Streamlit
-                st.code(base_prompt, language=None)
-                
-                # Previzualizare text original (optional, pentru verificare)
-                with st.popover("Vezi textul original din această secțiune"):
-                    st.text(chunk)
+            # Afisare rezultat
+            label = f"PARTEA {i+1} din {len(chunks)} (Copiază acest prompt)"
+            with st.expander(label, expanded=True):
+                # st.code afiseaza butonul de copy automat
+                st.code(prompt_text, language=None)
+                st.caption(f"Lungime prompt: {len(prompt_text)} caractere")
 
 if __name__ == "__main__":
     main()
