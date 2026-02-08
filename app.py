@@ -101,5 +101,3 @@ Textul de tradus:
 
 if __name__ == "__main__":
     main()
-
-În câteva secunde vei avea link-ul tău privat unde poți procesa guidelines oricând ai nevoie.
