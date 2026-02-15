@@ -42,7 +42,7 @@ Include:
 * Stil: Folosește subtitluri (H2, H3), bold, și emoji-uri pentru a structura informația.
 
 ### 3. Linking Logic
-* Înlocuiește referințele numerice (ex: [27]) cu link-uri [[{ref_format}-AUTOR-AN]].
+* Înlocuiește referințele numerice (ex: [27]) cu link-uri [[{ref_format}-AUTOR-AN (sau @AutorAn conform convenției standard)]].
 * Folosește lista bibliografică de la final pentru a identifica autorul și anul.
 
 ### 4. Input
@@ -55,7 +55,8 @@ BIBLIOGRAFIE:
 
 TEMPLATE_STUDIU = """Acționează ca un expert cercetător în {domain}.
 Creează o notă de referință academică pentru bibliografia de mai jos.
-Output OBSIDIAN copy-paste ready; Foloseste formatari si emoji pentru a evidentia lucruri importante si a fi mai estetically pleasing;
+Output OBSIDIAN copy-paste ready; 
+Foloseste formatari si emoji pentru a evidentia lucruri importante si a fi mai estetically pleasing;
 
 ### 1. Header & ID
 * H1: {ref_format}-AUTOR-AN (sau @AutorAn conform convenției standard)
@@ -63,7 +64,6 @@ Output OBSIDIAN copy-paste ready; Foloseste formatari si emoji pentru a evidenti
     * id: (automat)
     * type: reference
     * project: {project_prefix}
-    * linked_section: {parent_section_id}
     * tags: {default_tags}
     * doi_url: (extract form text)
 
