@@ -55,6 +55,7 @@ BIBLIOGRAFIE:
 
 TEMPLATE_STUDIU = """Acționează ca un expert cercetător în {domain}.
 Creează o notă de referință academică pentru bibliografia de mai jos.
+Output OBSIDIAN copy-paste ready
 
 ### 1. Header & ID
 * H1: {ref_format}-AUTOR-AN (sau @AutorAn conform convenției standard)
