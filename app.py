@@ -25,7 +25,7 @@ st.markdown("""
 # --- 2. TEMPLATE-URI DEFAULT ---
 
 TEMPLATE_GHID = """Acționează ca un expert în {domain} și utilizator avansat de Obsidian.
-Analizează textul următor extras din {source_name} și creează o pagină Obsidian formatată astfel:
+Analizează textul următor extras din {source_name} și creează o pagină Obsidian (in fereastra de cod sa dau direct copy-paste) formatată astfel:
 
 ### 1. YAML Header
 Include:
@@ -42,7 +42,7 @@ Include:
 * Stil: Folosește subtitluri (H2, H3), bold, și emoji-uri pentru a structura informația.
 
 ### 3. Linking Logic
-* Înlocuiește referințele numerice (ex: [27]) cu link-uri [[{ref_format}-AUTOR-AN (sau @AutorAn conform convenției standard)]].
+* Înlocuiește referințele numerice (ex: [27]) cu link-uri [[ @AutorAn conform convenției standard]].
 * Folosește lista bibliografică de la final pentru a identifica autorul și anul.
 
 ### 4. Input
