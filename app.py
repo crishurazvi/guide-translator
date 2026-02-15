@@ -55,7 +55,7 @@ BIBLIOGRAFIE:
 
 TEMPLATE_STUDIU = """Acționează ca un expert cercetător în {domain}.
 Creează o notă de referință academică pentru bibliografia de mai jos.
-Output OBSIDIAN copy-paste ready
+Output OBSIDIAN copy-paste ready; Foloseste formatari si emoji pentru a evidentia lucruri importante si a fi mai estetically pleasing;
 
 ### 1. Header & ID
 * H1: {ref_format}-AUTOR-AN (sau @AutorAn conform convenției standard)
@@ -63,7 +63,7 @@ Output OBSIDIAN copy-paste ready
     * id: (automat)
     * type: reference
     * project: {project_prefix}
-    * linked_guideline_section: [[{parent_section_id}]]
+    * linked_section: {parent_section_id}
     * tags: {default_tags}
     * doi_url: (extract form text)
 
@@ -73,7 +73,9 @@ Caută detaliile sau extrage-le din text:
 * Methods: Metodologia folosită.
 * Results: Date cheie.
 * Conclusion: Concluzia principală.
+* Disscution: Ce aport a adus acest studiu? Ce importanta are? De ce e citat in ghid? Ce intrebari a nascut acest studiu? 
 * Link Extern: DOI/PubMed.
+* Link Intern: {parent_section_id}
 
 ### 3. Limba
 Redactează în limba {language}.
